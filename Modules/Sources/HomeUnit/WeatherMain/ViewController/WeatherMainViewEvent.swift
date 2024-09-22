@@ -5,7 +5,7 @@
 //  Created by Nikita Gavrilov on 21.09.2024.
 //
 
-enum WeatherMainViewEvent: Equatable {
+enum WeatherMainViewEvent {
     case viewLoaded
     case tappedAddCity
     case needOpenDetails(city: String)
@@ -13,6 +13,22 @@ enum WeatherMainViewEvent: Equatable {
 }
 
 extension WeatherMainViewEvent {
+    enum Equals {
+        case viewLoaded
+        case tappedAddCity
+    }
+    
+    var equals: Equals? {
+        switch self {
+        case .tappedAddCity:
+            return .tappedAddCity
+        case .viewLoaded:
+            return .viewLoaded
+        default:
+            return nil
+        }
+    }
+    
     var needOpenDetails: String? {
         switch self {
         case let .needOpenDetails(value):

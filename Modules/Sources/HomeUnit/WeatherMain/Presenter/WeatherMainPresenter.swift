@@ -56,7 +56,7 @@ private extension WeatherMainPresenter {
         // Обработка сценария после загрузки вью
         eventListenerSubject
             .filter {
-                $0 == .viewLoaded
+                $0.equals == .viewLoaded
             }
             .flatMap { [interactor] _ in
                 interactor.fetchWeatherDataForSavedCities()
@@ -70,9 +70,12 @@ private extension WeatherMainPresenter {
             .compactMap {
                 $0.needOpenDetails
             }
-            .combineLatest(interactor.citiesData)
+            .map { [interactor] cityName in
+                interactor.citiesData.first().map { ($0, cityName) }
+            }
+            .switchToLatest()
             .receive(on: DispatchQueue.main)
-            .sink { [router] cityName, citiesData in
+            .sink { [router] citiesData, cityName in
                 if let city = citiesData.first(where: { $0.name == cityName }) {
                     router.openWeatherDetails(city)
                 }
@@ -82,7 +85,7 @@ private extension WeatherMainPresenter {
         // Обработка нажатия на Добавить город
         eventListenerSubject
             .filter {
-                $0 == .tappedAddCity
+                $0.equals == .tappedAddCity
             }
             .receive(on: DispatchQueue.main)
             .sink { [router] _ in
@@ -116,7 +119,6 @@ private extension WeatherMainPresenter {
         
         // Посылаем запрос на обновление данных
         updateEventPublisher
-            .removeDuplicates()
             .filter {
                 $0 == .needUpdateMainScreen
             }
